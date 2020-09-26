@@ -1,21 +1,19 @@
-%% ICA for CFA
-clear all; close all
-%specify path to fieldtrip on your drive
-addpath('/Users/Amanda/OneDrive/Matlab/fieldtrip-20200821')
+function dataFindCardiacFieldArtifact(filePathECG, filePathComponents)
 
+%specify path to fieldtrip on your drive
 ft_defaults()
 
 % Using ECG and Component data where noisy trials are already removed
 % (so heart beat and CFA is easier to identify)
 % Note: Actual removal of components needs to be done on original data
 
-filePathECG = '/Users/Amanda/Desktop/bioFeedback2/processed_data_ECG';
-filePathComponent = '/Users/Amanda/Desktop/bioFeedback2/processed_data_components';
-outputPath = fileparts(filePathComponent);
+% filePathECG = '/Users/Amanda/Desktop/bioFeedback2/processed_data_ECG';
+% filePathComponents = '/Users/Amanda/Desktop/bioFeedback2/processed_data_components';
+outputPath = fileparts(filePathComponents);
 
 % Load data
 load(filePathECG,'data_ECG');
-load(filePathComponent,'data_components');
+load(filePathComponents,'data_components');
 
 % Identify heart beats relative to event of interest
 % r-syncing makes identification of CFA easier - actual data is saved with
@@ -55,7 +53,7 @@ for trialNumber = 1 : trialCount
     
     % Run the Pan Tompkins algorithm over the ECG data for this trial to
     % detect R peaks (listed in the returned index)
-    [rWaveAmplitude, rWaveIndex] = pan_tompkin(ecg_trial, sampleFrequency, 0);
+    [~, rWaveIndex] = pan_tompkin(ecg_trial, sampleFrequency, 0);
 
     % At which time (in s) do R-Peaks appear in this trial?
     rPeakTimes = ecg_timing(rWaveIndex);
