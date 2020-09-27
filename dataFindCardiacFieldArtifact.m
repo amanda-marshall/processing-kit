@@ -193,7 +193,7 @@ for cnum=4:-1:1
     xlabel('time')
     ylabel('trial')
 
-    filePath = fullfile(outputPath, ['component_', num2str(componentId)]);
+    filePath = fullfile(outputPath, [num2str(cnum), ' - component_', num2str(componentId)]);
     saveas(fig, filePath, 'png');
 
 end
