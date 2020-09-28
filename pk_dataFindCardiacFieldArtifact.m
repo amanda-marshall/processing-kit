@@ -1,4 +1,4 @@
-function dataFindCardiacFieldArtifact(filePathECG, filePathComponents)
+function pk_dataFindCardiacFieldArtifact(filePathECG, filePathComponents)
 
 %specify path to fieldtrip on your drive
 ft_defaults()
@@ -66,7 +66,7 @@ for trialNumber = 1 : trialCount
             % prePeakTime and postPeakTime defined at the top
             peakStartSampleIndex = peakSampleIndeces(sampleIndex) - (prePeakSamples + 1);
             peakEndSampleIndex = peakSampleIndeces(sampleIndex) + postPeakSamples - 1;
-            
+
             % Skip this heartbeat, if the sample window too early/late
             if peakStartSampleIndex < 1 || peakEndSampleIndex > length(data_ECG.trial{trialNumber})
                 continue;

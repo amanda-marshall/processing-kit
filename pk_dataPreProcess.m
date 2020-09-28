@@ -1,4 +1,4 @@
-function dataPreProcess(filePath)
+function pk_dataPreProcess(filePath)
 
 outputPath = fileparts(filePath);
 
