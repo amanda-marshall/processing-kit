@@ -1,4 +1,4 @@
-function pk_dataPreProcess(filePath)
+function pk_dataPreProcess(filePath, cfgSegmentation)
 
 outputPath = fileparts(filePath);
 
@@ -54,10 +54,7 @@ cfg = [];
 cfg.dataset = prefs.eegFile;
 cfg.trialfun = 'ft_trialfun_bracketed'; % Custom trial definition function that uses triggers as markers for the start and end of the trial
 cfg.trialdef.eventtype = 'Stimulus'; % Trial event type
-cfg.trialdef.eventvalue = {'S  1', 'S  2', 'S  3'}; % Event codes that mark the start of a trial
-cfg.trialdef.eventvalueend = {'S 30', 'S 31', 'S 32', 'S 33', 'S 34', 'S 35', 'S 36', 'S 37', 'S 38', 'S 39', 'S 40', 'S 41'}; % Event codes that mark the end of a trial
-cfg.trialdef.prestim = 0; % Time (in s) before the start trigger
-cfg.trialdef.poststim = 2; % Time (in s) after the end trigger
+cfg = pk_mergeStructs(cfg, cfgSegmentation); % Merge passed trial definition with config object
 trial_definition = ft_definetrial(cfg);
 
 % Segment data based on trial definition
