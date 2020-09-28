@@ -12,8 +12,8 @@ ft_defaults()
 outputPath = fileparts(filePathComponents);
 
 % Load data
-load(filePathECG,'data_ECG');
-load(filePathComponents,'data_components');
+load(filePathECG, 'data_ECG');
+load(filePathComponents, 'data_components');
 
 % Identify heart beats relative to event of interest
 % r-syncing makes identification of CFA easier - actual data is saved with
