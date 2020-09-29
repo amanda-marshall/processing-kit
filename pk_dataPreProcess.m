@@ -1,4 +1,4 @@
-function pk_dataPreProcess(filePath, cfgSegmentation)
+function pk_dataPreProcess(filePath, cfgSegmentation, passedPrefs)
 
 outputPath = fileparts(filePath);
 
@@ -7,8 +7,22 @@ prefs = [];
 prefs.eegFile = filePath; % File to read
 prefs.ecgChannel = 'ECG';
 prefs.eegChannels = { 'Fp1', 'Fp2', 'F7', 'F3', 'Fz', 'F4', 'F8', 'FC5', 'FC1', 'FC2', 'FC6', 'T7', 'C3', 'Cz', 'C4', 'T8', 'TP9', 'CP5', 'CP1', 'CP2', 'CP6', 'TP10', 'P7', 'P3', 'Pz', 'P4', 'P8', 'PO9', 'O1', 'Oz', 'O2', 'PO10', 'AF7', 'AF3', 'AF4', 'AF8', 'F5', 'F1', 'F2', 'F6', 'F9', 'FT7', 'FC3', 'FC4', 'FT8', 'F10', 'C5', 'C1', 'C2', 'C6', 'TP7', 'CP3', 'CPz', 'CP4', 'TP8', 'P5', 'P1', 'P2', 'P6', 'PO7', 'POz', 'PO3', 'P03', 'PO4', 'PO8' };
+prefs.shouldSkipPreviouslyProcessed = false;
+prefs.outputPath = outputPath;
+prefs = pk_mergeStructs(prefs, passedPrefs);
 % NOTE: This channel configuration contains both the correct PO3 and
 % incorrect P03 channel (P ZERO 3), for misconfigured datasets.
+
+% Make output file paths
+filePathEEG = fullfile(prefs.outputPath, 'processed_data_EEG.mat');
+filePathECG = fullfile(prefs.outputPath, 'processed_data_ECG.mat');
+filePathComponents = fullfile(prefs.outputPath, 'processed_data_components.mat');
+
+% Abort if the output files already exist
+if prefs.shouldSkipPreviouslyProcessed && exist(filePathEEG, 'file') && exist(filePathECG, 'file') && exist(filePathComponents, 'file')
+  fprintf('\n### Output Data for %s already exists, skipping\n\n', filePath);
+  return;
+end
 
 % Read raw EEG data into MATLAB
 cfg = [];
@@ -78,9 +92,6 @@ data_components = ft_componentanalysis(cfg, data_EEG);
 
 % Save processed data
 fprintf('\n### 9. Save data to disk\n\n');
-filePathEEG = fullfile(outputPath, 'processed_data_EEG');
-filePathECG = fullfile(outputPath, 'processed_data_ECG');
-filePathComponents = fullfile(outputPath, 'processed_data_components');
 save(filePathEEG, 'data_EEG');
 save(filePathECG, 'data_ECG');
 save(filePathComponents, 'data_components');
