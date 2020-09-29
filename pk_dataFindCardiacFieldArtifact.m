@@ -1,15 +1,33 @@
-function pk_dataFindCardiacFieldArtifact(filePathECG, filePathComponents)
+function pk_dataFindCardiacFieldArtifact(filePathECG, filePathComponents, passedPrefs)
 
-%specify path to fieldtrip on your drive
-ft_defaults()
+% Internal preferences
+prefs = [];
+prefs.shouldSkipPreviouslyProcessed = false;
+prefs.outputComponentCount = 4; % Home many components should be written out?
+prefs.outputPath = fileparts(filePathComponents);
+prefs.prePeakTime = 0.2;
+prefs.postPeakTime = 0.6;
+prefs = pk_mergeStructs(prefs, passedPrefs); % Merge passed prefs with defaults
+
+existCount = 0;
+outputFileNames = cell(1, prefs.outputComponentCount);
+for i = 1:prefs.outputComponentCount
+  figureFilePath = fullfile(prefs.outputPath, ['component_', num2str(i), '.png']);
+  if exist(figureFilePath, 'file')
+    existCount = existCount + 1;
+  end
+  outputFileNames(i) = {figureFilePath};
+end
+
+% Bail, if all output files already exist
+if prefs.shouldSkipPreviouslyProcessed && existCount == prefs.outputComponentCount
+  fprintf('\n### Output Data for %s already exists, skipping\n\n', filePathComponents);
+  return;
+end;
 
 % Using ECG and Component data where noisy trials are already removed
 % (so heart beat and CFA is easier to identify)
 % Note: Actual removal of components needs to be done on original data
-
-% filePathECG = '/Users/Amanda/Desktop/bioFeedback2/processed_data_ECG';
-% filePathComponents = '/Users/Amanda/Desktop/bioFeedback2/processed_data_components';
-outputPath = fileparts(filePathComponents);
 
 % Load data
 load(filePathECG, 'data_ECG');
@@ -21,9 +39,8 @@ load(filePathComponents, 'data_components');
 sampleFrequency = data_ECG.fsample;
 trialCount = length(data_components.trial);    % Number of trials
 
-% TODO: Why these specific numbers?
-prePeakTime = 0.2;	% Time before each peak in seconds
-postPeakTime = 0.6;	% Time after each peak in seconds
+prePeakTime = prefs.prePeakTime;	% Time before each peak in seconds
+postPeakTime = prefs.postPeakTime;	% Time after each peak in seconds
 
 % Convert time (in sec) to samples, based on input sample frequency
 prePeakSamples = prePeakTime * sampleFrequency;     % Samples before peak
@@ -131,10 +148,11 @@ fdcomp         = ft_connectivityanalysis(cfg, freq);
 [~, componentIdsSorted] = sort(mean(fdcomp.cohspctrm, 2), 'descend');
 
 % How many components do we want to see?
-for cnum=4:-1:1
+componentIdsOfInterest = componentIdsSorted(1:prefs.outputComponentCount);
+for cnum = prefs.outputComponentCount:-1:1
 
     componentId = componentIdsSorted(cnum);
-    otherComponentIds = setdiff(componentIdsSorted, componentId);
+    otherComponentIds = setdiff(componentIdsOfInterest, componentId);
 
     fig = figure('visible', 'off');
 
@@ -193,8 +211,7 @@ for cnum=4:-1:1
     xlabel('time')
     ylabel('trial')
 
-    filePath = fullfile(outputPath, [num2str(cnum), ' - component_', num2str(componentId)]);
-    saveas(fig, filePath, 'png');
+    saveas(fig, char(outputFileNames(cnum)));
 
 end
 
